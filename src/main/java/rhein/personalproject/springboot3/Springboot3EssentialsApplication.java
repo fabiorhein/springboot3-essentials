@@ -1,4 +1,4 @@
-package rhein.personalproject.springboot3.springboot3essentials;
+package rhein.personalproject.springboot3;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
