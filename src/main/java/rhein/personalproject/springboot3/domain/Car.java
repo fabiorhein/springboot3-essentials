@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class Car extends Entity {
+public class Car extends EntityBase {
     private String name;
     private String model;
     private long registerNumber;
