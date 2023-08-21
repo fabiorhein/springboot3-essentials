@@ -6,5 +6,6 @@ import java.util.UUID;
 
 @Getter
 public class EntityBase {
+
     private UUID id;
 }
