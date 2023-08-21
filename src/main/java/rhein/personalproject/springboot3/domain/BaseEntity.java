@@ -3,6 +3,7 @@ package rhein.personalproject.springboot3.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
 
@@ -12,6 +13,6 @@ import java.util.UUID;
 public abstract class BaseEntity {
     @Id
     @GeneratedValue
-    @Column(columnDefinition = "BINARY(16)", updatable = false, nullable = false)
+    @UuidGenerator
     private UUID id;
 }
