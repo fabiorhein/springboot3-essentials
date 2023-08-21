@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 @Data
-public class Car extends EntityBase {
+public class Car extends BaseEntity {
     private String name;
     private String model;
     private long registerNumber;

@@ -2,6 +2,7 @@ package rhein.personalproject.springboot3.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import rhein.personalproject.springboot3.domain.Car;
 import rhein.personalproject.springboot3.repository.CarRepository;
 
@@ -24,15 +25,18 @@ public class CarService {
                 .orElseThrow();
     }
 
+    @Transactional
     public Car save(Car car) {
         return carRepository.save(car);
     }
 
     // TODO: Create the logical Delete
-    public void delete(Car car) {
+    public void delete(UUID id) {
+        Car car = findById(id);
         carRepository.delete(car);
     }
 
+    @Transactional
     public void update(Car car) {
         carRepository.save(car);
     }
