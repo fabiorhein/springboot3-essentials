@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import rhein.personalproject.springboot3.domain.Car;
 import rhein.personalproject.springboot3.repository.CarRepository;
+import rhein.personalproject.springboot3.util.Utils;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,16 +14,14 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CarService {
     private final CarRepository carRepository;
+    private final Utils utils;
 
     public List<Car> listAll() {
         return carRepository.findAll();
     }
 
-    // TODO: Create the ResourceNotFoundException
     public Car findById(UUID id) {
-        return carRepository
-                .findById(id)
-                .orElseThrow();
+        return utils.findCarOrThrowNotFound(id, carRepository);
     }
 
     @Transactional
@@ -32,13 +31,12 @@ public class CarService {
 
     // TODO: Create the logical Delete
     public void delete(UUID id) {
-        Car car = findById(id);
-        carRepository.delete(car);
+        carRepository.delete(findById(id));
     }
 
     @Transactional
-    public void update(Car car) {
-        carRepository.save(car);
+    public Car update(Car car) {
+        return carRepository.save(car);
     }
 
 }

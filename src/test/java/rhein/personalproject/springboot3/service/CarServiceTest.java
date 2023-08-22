@@ -1,4 +1,4 @@
-package rhein.personalproject.springboot3.controller;
+package rhein.personalproject.springboot3.service;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,35 +9,45 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import rhein.personalproject.springboot3.domain.Car;
-import rhein.personalproject.springboot3.service.CarService;
+import rhein.personalproject.springboot3.exception.ResourceNotFoundException;
+import rhein.personalproject.springboot3.repository.CarRepository;
 import rhein.personalproject.springboot3.util.CarCreator;
+import rhein.personalproject.springboot3.util.Utils;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @ExtendWith(SpringExtension.class)
-@DisplayName("Car Controller Tests")
-class CarControllerTest {
-
+@DisplayName("Car Service Tests")
+class CarServiceTest {
     @InjectMocks
-    private CarController carController;
+    private CarService carService;
     @Mock
-    private CarService carServiceMock;
-
+    private CarRepository carRepositoryMock;
+    @Mock
+    private Utils utilsMock;
     @BeforeEach
-    public void setUp() {
+    private void setUp() {
         List<Car> cars = List.of(CarCreator.createValidCar());
-        BDDMockito.when(carServiceMock.listAll())
-                        .thenReturn(cars);
+        BDDMockito.when(carRepositoryMock.findAll())
+                .thenReturn(cars);
 
-        BDDMockito.when(carServiceMock.findById(ArgumentMatchers.any(UUID.class)))
+        BDDMockito.when(carRepositoryMock.findById(ArgumentMatchers.any(UUID.class)))
+                .thenReturn(Optional.of(CarCreator.createValidCar()));
+
+        BDDMockito.when(carRepositoryMock.save(CarCreator.createCarToBeSaved()))
                 .thenReturn(CarCreator.createValidCar());
 
-        BDDMockito.when(carServiceMock.save(CarCreator.createCarToBeSaved()))
+        BDDMockito.doNothing().when(carRepositoryMock).delete(ArgumentMatchers.any(Car.class));
+
+        BDDMockito.when(carRepositoryMock.save(CarCreator.createValidCar()))
+                .thenReturn(CarCreator.createValidUpdatedCar());
+
+        BDDMockito.when(
+                        utilsMock.findCarOrThrowNotFound(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(CarRepository.class)))
                 .thenReturn(CarCreator.createValidCar());
     }
 
@@ -45,7 +55,7 @@ class CarControllerTest {
     @DisplayName("listAll return a list of cars when successful")
     public void listAll_ReturnListOfCars_WhenSuccessfull() {
         String expectedName = CarCreator.createValidCar().getName();
-        List<Car> cars = carController.listAll().getBody();
+        List<Car> cars = carService.listAll();
         Assertions.assertThat(cars).isNotNull();
         Assertions.assertThat(cars).isNotEmpty();
         Assertions.assertThat(cars.get(0).getName()).isEqualTo(expectedName);
@@ -56,7 +66,7 @@ class CarControllerTest {
     public void findById_ReturnListOfCars_WhenSuccessfull() {
         UUID expectedId = CarCreator.createValidCar().getId();
         UUID id = UUID.fromString("ad19f068-c91c-4603-8a09-84f1f72cb50f");
-        Car car = carController.findById(id).getBody();
+        Car car = carService.findById(id);
         Assertions.assertThat(car).isNotNull();
         Assertions.assertThat(car.getId()).isNotNull();
         Assertions.assertThat(car.getId()).isEqualTo(expectedId);
@@ -67,7 +77,7 @@ class CarControllerTest {
     public void save_CreatesCar_WhenSuccessfull() {
         UUID expectedId = CarCreator.createValidCar().getId();
         Car carToBeSaved = CarCreator.createCarToBeSaved();
-        Car savedCar = carController.save(carToBeSaved).getBody();
+        Car savedCar = carService.save(carToBeSaved);
 
         Assertions.assertThat(savedCar).isNotNull();
         Assertions.assertThat(savedCar.getId())
@@ -79,19 +89,27 @@ class CarControllerTest {
     @DisplayName("delete removes the car when successful")
     public void delete_RemovesCar_WhenSuccessfull() {
         UUID id = UUID.fromString("ad19f068-c91c-4603-8a09-84f1f72cb50f");
-        ResponseEntity<Void> responseEntity = carController.delete(id);
-        Assertions.assertThat(responseEntity).isNotNull();
-        Assertions.assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-        Assertions.assertThat(responseEntity.getBody()).isNull();
+        Assertions.assertThatCode(() -> carService.delete(id))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("delete throws ResourceNotFoundException when the car does not exist")
+    public void delete_ThrowsResourceNotFoundException_WhenCarDoesNotExist() {
+        BDDMockito.when(
+                        utilsMock.findCarOrThrowNotFound(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(CarRepository.class)))
+                .thenThrow(new ResourceNotFoundException("Anime not found"));
+
+        UUID id = UUID.fromString("ad19f068-c91c-4603-8a09-84f1f72cb5aa");
+        Assertions.assertThatExceptionOfType(ResourceNotFoundException.class)
+                .isThrownBy(() -> carService.delete(id));
     }
 
     @Test
     @DisplayName("update save updated car when successful")
     public void update_SaveUpdatedCar_WhenSuccessfull() {
-        ResponseEntity<Void> responseEntity = carController.update(CarCreator.createValidUpdatedCar());
-        Assertions.assertThat(responseEntity).isNotNull();
-        Assertions.assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-        Assertions.assertThat(responseEntity.getBody()).isNull();
+        Car validUpdatedCar = CarCreator.createValidUpdatedCar();
+        Assertions.assertThatCode(() -> carService.update(validUpdatedCar))
+                .doesNotThrowAnyException();
     }
-
 }
