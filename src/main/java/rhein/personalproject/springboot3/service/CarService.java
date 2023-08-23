@@ -2,41 +2,49 @@ package rhein.personalproject.springboot3.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import rhein.personalproject.springboot3.domain.Car;
+import rhein.personalproject.springboot3.exception.BadRequestException;
+import rhein.personalproject.springboot3.mapper.CarMapper;
 import rhein.personalproject.springboot3.repository.CarRepository;
+import rhein.personalproject.springboot3.requests.car.CarPostRequestBody;
+import rhein.personalproject.springboot3.requests.car.CarPutRequestBody;
 import rhein.personalproject.springboot3.util.Utils;
 
 import java.util.List;
 import java.util.UUID;
 
-@Repository
+@Service
 @RequiredArgsConstructor
 public class CarService {
     private final CarRepository carRepository;
-    private final Utils utils;
 
     public List<Car> listAll() {
         return carRepository.findAll();
     }
 
-    public Car findById(UUID id) {
-        return utils.findCarOrThrowNotFound(id, carRepository);
+    public Car findByIdOrThrowBadRequestException(UUID id) {
+        return carRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("Anime not Found"));
     }
 
     @Transactional
-    public Car save(Car car) {
-        return carRepository.save(car);
+    public Car save(CarPostRequestBody carPostRequestBody) {
+        return carRepository.save(CarMapper.INSTANCE.toCar(carPostRequestBody));
     }
 
     // TODO: Create the logical Delete
     public void delete(UUID id) {
-        carRepository.delete(findById(id));
+        carRepository.delete(findByIdOrThrowBadRequestException(id));
     }
 
     @Transactional
-    public Car update(Car car) {
-        return carRepository.save(car);
+    public void update(CarPutRequestBody carPutRequestBody) {
+        Car savedCar = findByIdOrThrowBadRequestException(carPutRequestBody.getId());
+        Car car = CarMapper.INSTANCE.toCar(carPutRequestBody);
+        car.setId(savedCar.getId());
+        carRepository.save(car);
     }
 
 }

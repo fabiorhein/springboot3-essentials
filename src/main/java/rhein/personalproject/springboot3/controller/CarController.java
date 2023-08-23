@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rhein.personalproject.springboot3.domain.Car;
+import rhein.personalproject.springboot3.requests.car.CarPostRequestBody;
+import rhein.personalproject.springboot3.requests.car.CarPutRequestBody;
 import rhein.personalproject.springboot3.service.CarService;
 
 import java.util.List;
@@ -25,12 +27,12 @@ public class CarController {
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<Car> findById(@PathVariable UUID id) {
-        return ResponseEntity.ok(carService.findById(id));
+        return ResponseEntity.ok(carService.findByIdOrThrowBadRequestException(id));
     }
 
     @PostMapping
-    public ResponseEntity<Car> save(@RequestBody Car car) {
-        return ResponseEntity.ok(carService.save(car));
+    public ResponseEntity<Car> save(@RequestBody CarPostRequestBody postRequestBody) {
+        return ResponseEntity.ok(carService.save(postRequestBody));
     }
 
     @DeleteMapping(path = "/{id}")
@@ -40,8 +42,8 @@ public class CarController {
     }
 
     @PutMapping
-    public ResponseEntity<Void> update(@RequestBody Car car) {
-        carService.update(car);
+    public ResponseEntity<Void> update(@RequestBody CarPutRequestBody carPutRequestBody) {
+        carService.update(carPutRequestBody);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
