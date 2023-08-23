@@ -5,7 +5,10 @@
 .idea/
 
 #target
-.target
+.classpath
+.project
+.settings/
+target/
 
 # Log file
 *.log
