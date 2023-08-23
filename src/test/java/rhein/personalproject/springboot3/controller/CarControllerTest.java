@@ -13,8 +13,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import rhein.personalproject.springboot3.domain.Car;
+import rhein.personalproject.springboot3.requests.car.CarPostRequestBody;
+import rhein.personalproject.springboot3.requests.car.CarPutRequestBody;
 import rhein.personalproject.springboot3.service.CarService;
 import rhein.personalproject.springboot3.util.CarCreator;
+import rhein.personalproject.springboot3.util.CarPostRequestBodyCreator;
+import rhein.personalproject.springboot3.util.CarPutRequestBodyCreator;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,7 +26,6 @@ import java.util.UUID;
 @ExtendWith(SpringExtension.class)
 @DisplayName("Car Controller Tests")
 class CarControllerTest {
-
     @InjectMocks
     private CarController carController;
     @Mock
@@ -34,11 +37,15 @@ class CarControllerTest {
         BDDMockito.when(carServiceMock.listAll())
                         .thenReturn(cars);
 
-        BDDMockito.when(carServiceMock.findById(ArgumentMatchers.any(UUID.class)))
+        BDDMockito.when(carServiceMock.findByIdOrThrowBadRequestException(ArgumentMatchers.any(UUID.class)))
                 .thenReturn(CarCreator.createValidCar());
 
-        BDDMockito.when(carServiceMock.save(CarCreator.createCarToBeSaved()))
+        BDDMockito.when(carServiceMock.save(ArgumentMatchers.any(CarPostRequestBody.class)))
                 .thenReturn(CarCreator.createValidCar());
+
+        BDDMockito.doNothing().when(carServiceMock).update(ArgumentMatchers.any(CarPutRequestBody.class));
+
+        BDDMockito.doNothing().when(carServiceMock).delete(ArgumentMatchers.any(UUID.class));
     }
 
     @Test
@@ -47,7 +54,9 @@ class CarControllerTest {
         String expectedName = CarCreator.createValidCar().getName();
         List<Car> cars = carController.listAll().getBody();
         Assertions.assertThat(cars).isNotNull();
-        Assertions.assertThat(cars).isNotEmpty();
+        Assertions.assertThat(cars)
+                .isNotEmpty()
+                .hasSize(1);
         Assertions.assertThat(cars.get(0).getName()).isEqualTo(expectedName);
     }
 
@@ -58,18 +67,18 @@ class CarControllerTest {
         UUID id = UUID.fromString("ad19f068-c91c-4603-8a09-84f1f72cb50f");
         Car car = carController.findById(id).getBody();
         Assertions.assertThat(car).isNotNull();
-        Assertions.assertThat(car.getId()).isNotNull();
-        Assertions.assertThat(car.getId()).isEqualTo(expectedId);
+        Assertions.assertThat(car.getId())
+                .isNotNull()
+                .isEqualTo(expectedId);
     }
 
     @Test
     @DisplayName("save creates a car when successful")
     public void save_CreatesCar_WhenSuccessfull() {
         UUID expectedId = CarCreator.createValidCar().getId();
-        Car carToBeSaved = CarCreator.createCarToBeSaved();
+        CarPostRequestBody carToBeSaved = CarPostRequestBodyCreator.createCarPostRequestBody();
         Car savedCar = carController.save(carToBeSaved).getBody();
-
-        Assertions.assertThat(savedCar).isNotNull();
+        Assertions.assertThat(savedCar).isNotNull().isEqualTo(CarCreator.createValidCar());
         Assertions.assertThat(savedCar.getId())
                 .isNotNull()
                 .isEqualTo(expectedId);
@@ -78,7 +87,7 @@ class CarControllerTest {
     @Test
     @DisplayName("delete removes the car when successful")
     public void delete_RemovesCar_WhenSuccessfull() {
-        UUID id = UUID.fromString("ad19f068-c91c-4603-8a09-84f1f72cb50f");
+        UUID id = CarCreator.createValidCar().getId();
         ResponseEntity<Void> responseEntity = carController.delete(id);
         Assertions.assertThat(responseEntity).isNotNull();
         Assertions.assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
@@ -88,7 +97,8 @@ class CarControllerTest {
     @Test
     @DisplayName("update save updated car when successful")
     public void update_SaveUpdatedCar_WhenSuccessfull() {
-        ResponseEntity<Void> responseEntity = carController.update(CarCreator.createValidUpdatedCar());
+        CarPutRequestBody carToBeUpdated = CarPutRequestBodyCreator.createCarPutRequestBody();
+        ResponseEntity<Void> responseEntity = carController.update(carToBeUpdated);
         Assertions.assertThat(responseEntity).isNotNull();
         Assertions.assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         Assertions.assertThat(responseEntity.getBody()).isNull();

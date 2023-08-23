@@ -11,9 +11,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import rhein.personalproject.springboot3.domain.Car;
+import rhein.personalproject.springboot3.exception.BadRequestException;
 import rhein.personalproject.springboot3.exception.ResourceNotFoundException;
 import rhein.personalproject.springboot3.repository.CarRepository;
+import rhein.personalproject.springboot3.requests.car.CarPostRequestBody;
+import rhein.personalproject.springboot3.requests.car.CarPutRequestBody;
 import rhein.personalproject.springboot3.util.CarCreator;
+import rhein.personalproject.springboot3.util.CarPostRequestBodyCreator;
+import rhein.personalproject.springboot3.util.CarPutRequestBodyCreator;
 import rhein.personalproject.springboot3.util.Utils;
 
 import java.util.List;
@@ -38,7 +43,7 @@ class CarServiceTest {
         BDDMockito.when(carRepositoryMock.findById(ArgumentMatchers.any(UUID.class)))
                 .thenReturn(Optional.of(CarCreator.createValidCar()));
 
-        BDDMockito.when(carRepositoryMock.save(CarCreator.createCarToBeSaved()))
+        BDDMockito.when(carRepositoryMock.save(ArgumentMatchers.any(Car.class)))
                 .thenReturn(CarCreator.createValidCar());
 
         BDDMockito.doNothing().when(carRepositoryMock).delete(ArgumentMatchers.any(Car.class));
@@ -66,17 +71,27 @@ class CarServiceTest {
     public void findById_ReturnListOfCars_WhenSuccessfull() {
         UUID expectedId = CarCreator.createValidCar().getId();
         UUID id = UUID.fromString("ad19f068-c91c-4603-8a09-84f1f72cb50f");
-        Car car = carService.findById(id);
+        Car car = carService.findByIdOrThrowBadRequestException(id);
         Assertions.assertThat(car).isNotNull();
         Assertions.assertThat(car.getId()).isNotNull();
         Assertions.assertThat(car.getId()).isEqualTo(expectedId);
     }
 
     @Test
+    @DisplayName("findByIdOrThrowBadRequestException throws BadRequestException when car is not found")
+    void findByIdOrThrowBadRequestException_ThrowsBadRequestException_WhenCarIsNotFound(){
+        UUID id = UUID.fromString("ad19f068-c91c-4603-8a09-84f1f72cb50f");
+        BDDMockito.when(carRepositoryMock.findById(ArgumentMatchers.any(UUID.class)))
+                .thenReturn(Optional.empty());
+        Assertions.assertThatExceptionOfType(BadRequestException.class)
+                .isThrownBy(() -> carService.findByIdOrThrowBadRequestException(id));
+    }
+
+    @Test
     @DisplayName("save creates a car when successful")
     public void save_CreatesCar_WhenSuccessfull() {
         UUID expectedId = CarCreator.createValidCar().getId();
-        Car carToBeSaved = CarCreator.createCarToBeSaved();
+        CarPostRequestBody carToBeSaved = CarPostRequestBodyCreator.createCarPostRequestBody();
         Car savedCar = carService.save(carToBeSaved);
 
         Assertions.assertThat(savedCar).isNotNull();
@@ -94,21 +109,9 @@ class CarServiceTest {
     }
 
     @Test
-    @DisplayName("delete throws ResourceNotFoundException when the car does not exist")
-    public void delete_ThrowsResourceNotFoundException_WhenCarDoesNotExist() {
-        BDDMockito.when(
-                        utilsMock.findCarOrThrowNotFound(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(CarRepository.class)))
-                .thenThrow(new ResourceNotFoundException("Anime not found"));
-
-        UUID id = UUID.fromString("ad19f068-c91c-4603-8a09-84f1f72cb5aa");
-        Assertions.assertThatExceptionOfType(ResourceNotFoundException.class)
-                .isThrownBy(() -> carService.delete(id));
-    }
-
-    @Test
     @DisplayName("update save updated car when successful")
     public void update_SaveUpdatedCar_WhenSuccessfull() {
-        Car validUpdatedCar = CarCreator.createValidUpdatedCar();
+        CarPutRequestBody validUpdatedCar = CarPutRequestBodyCreator.createCarPutRequestBody();
         Assertions.assertThatCode(() -> carService.update(validUpdatedCar))
                 .doesNotThrowAnyException();
     }
