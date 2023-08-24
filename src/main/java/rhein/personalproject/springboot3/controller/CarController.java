@@ -1,5 +1,6 @@
 package rhein.personalproject.springboot3.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -31,7 +32,7 @@ public class CarController {
     }
 
     @PostMapping
-    public ResponseEntity<Car> save(@RequestBody CarPostRequestBody postRequestBody) {
+    public ResponseEntity<Car> save(@Valid @RequestBody CarPostRequestBody postRequestBody) {
         return ResponseEntity.ok(carService.save(postRequestBody));
     }
 
@@ -42,7 +43,7 @@ public class CarController {
     }
 
     @PutMapping
-    public ResponseEntity<Void> update(@RequestBody CarPutRequestBody carPutRequestBody) {
+    public ResponseEntity<Void> update(@Valid @RequestBody CarPutRequestBody carPutRequestBody) {
         carService.update(carPutRequestBody);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
