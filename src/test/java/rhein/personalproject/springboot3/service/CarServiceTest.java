@@ -12,14 +12,12 @@ import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import rhein.personalproject.springboot3.domain.Car;
 import rhein.personalproject.springboot3.exception.BadRequestException;
-import rhein.personalproject.springboot3.exception.ResourceNotFoundException;
 import rhein.personalproject.springboot3.repository.CarRepository;
 import rhein.personalproject.springboot3.requests.car.CarPostRequestBody;
 import rhein.personalproject.springboot3.requests.car.CarPutRequestBody;
 import rhein.personalproject.springboot3.util.CarCreator;
 import rhein.personalproject.springboot3.util.CarPostRequestBodyCreator;
 import rhein.personalproject.springboot3.util.CarPutRequestBodyCreator;
-import rhein.personalproject.springboot3.util.Utils;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,8 +30,7 @@ class CarServiceTest {
     private CarService carService;
     @Mock
     private CarRepository carRepositoryMock;
-    @Mock
-    private Utils utilsMock;
+
     @BeforeEach
     private void setUp() {
         List<Car> cars = List.of(CarCreator.createValidCar());
@@ -51,9 +48,6 @@ class CarServiceTest {
         BDDMockito.when(carRepositoryMock.save(CarCreator.createValidCar()))
                 .thenReturn(CarCreator.createValidUpdatedCar());
 
-        BDDMockito.when(
-                        utilsMock.findCarOrThrowNotFound(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(CarRepository.class)))
-                .thenReturn(CarCreator.createValidCar());
     }
 
     @Test

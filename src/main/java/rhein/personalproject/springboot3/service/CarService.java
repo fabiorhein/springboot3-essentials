@@ -1,7 +1,6 @@
 package rhein.personalproject.springboot3.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import rhein.personalproject.springboot3.domain.Car;
@@ -10,7 +9,6 @@ import rhein.personalproject.springboot3.mapper.CarMapper;
 import rhein.personalproject.springboot3.repository.CarRepository;
 import rhein.personalproject.springboot3.requests.car.CarPostRequestBody;
 import rhein.personalproject.springboot3.requests.car.CarPutRequestBody;
-import rhein.personalproject.springboot3.util.Utils;
 
 import java.util.List;
 import java.util.UUID;
@@ -26,7 +24,7 @@ public class CarService {
 
     public Car findByIdOrThrowBadRequestException(UUID id) {
         return carRepository.findById(id)
-                .orElseThrow(() -> new BadRequestException("Anime not Found"));
+                .orElseThrow(() -> new BadRequestException("Car not found"));
     }
 
     @Transactional

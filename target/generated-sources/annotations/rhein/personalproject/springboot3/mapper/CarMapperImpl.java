@@ -3,13 +3,14 @@ package rhein.personalproject.springboot3.mapper;
 import javax.annotation.processing.Generated;
 import org.springframework.stereotype.Component;
 import rhein.personalproject.springboot3.domain.Car;
+import rhein.personalproject.springboot3.domain.Car.CarBuilder;
 import rhein.personalproject.springboot3.requests.car.CarPostRequestBody;
 import rhein.personalproject.springboot3.requests.car.CarPutRequestBody;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2023-08-23T11:28:02-0300",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 17.0.8 (IBM Corporation)"
+    date = "2023-08-24T18:46:09-0300",
+    comments = "version: 1.4.1.Final, compiler: javac, environment: Java 17.0.8 (IBM Corporation)"
 )
 @Component
 public class CarMapperImpl extends CarMapper {
@@ -20,9 +21,15 @@ public class CarMapperImpl extends CarMapper {
             return null;
         }
 
-        Car car = new Car();
+        CarBuilder car = Car.builder();
 
-        return car;
+        car.name( carPostRequestBody.getName() );
+        car.model( carPostRequestBody.getModel() );
+        car.registerNumber( carPostRequestBody.getRegisterNumber() );
+        car.colour( carPostRequestBody.getColour() );
+        car.numberOfSeat( carPostRequestBody.getNumberOfSeat() );
+
+        return car.build();
     }
 
     @Override
@@ -31,8 +38,14 @@ public class CarMapperImpl extends CarMapper {
             return null;
         }
 
-        Car car = new Car();
+        CarBuilder car = Car.builder();
 
-        return car;
+        car.name( carPutRequestBody.getName() );
+        car.model( carPutRequestBody.getModel() );
+        car.registerNumber( carPutRequestBody.getRegisterNumber() );
+        car.colour( carPutRequestBody.getColour() );
+        car.numberOfSeat( carPutRequestBody.getNumberOfSeat() );
+
+        return car.build();
     }
 }
