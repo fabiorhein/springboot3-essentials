@@ -9,4 +9,5 @@ public class Springboot3EssentialsApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(Springboot3EssentialsApplication.class, args);
 	}
+
 }
