@@ -117,6 +117,9 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>rhein.personalproject.springboot3.Springboot3EssentialsApplication</mainClass>
+				</configuration>
 				<executions>
 					<execution>
 						<goals>
